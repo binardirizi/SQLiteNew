@@ -19,13 +19,14 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL("CREATE TABLE users (username TEXT PRIMARY KEY, password TEXT)");
         sqLiteDatabase.execSQL("CREATE TABLE biodata(nim TEXT PRIMARY KEY, nama TEXT, jeniskelamin TEXT, alamat TEXT, email TEXT)");
+        sqLiteDatabase.execSQL("CREATE TABLE biodatabuku(kode TEXT PRIMARY KEY, judul TEXT, pengarang TEXT, penerbit TEXT, isbn TEXT)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS users");
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS biodata");
-        onCreate(sqLiteDatabase);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS biodatabuku");
     }
 
     public boolean insertData(String username, String password) {
@@ -78,6 +79,51 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return exists;
     }
+    public boolean checkkode(String kode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM biodatabuku WHERE kode=?", new String[]{kode});
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+    public boolean insertDataBuku(String kode, String judul, String pengarang, String penerbit, String isbn) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put("kode", kode);
+        values.put("judul", judul);
+        values.put("pengarang", pengarang);
+        values.put("penerbit", penerbit);
+        values.put("isbn", isbn);
+        long result = db.insert("biodatabuku", null, values);
+        db.close();
+        return result != -1;
+    }
+    public Cursor tampildatabuku() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM biodatabuku", null);
+    }
+    public boolean deleteDataBuku(String kode) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete("biodatabuku", "kode=?", new String[]{kode});
+        db.close();
+        return result > 0;
+    }
+
+    public boolean updateDataBuku(String kode, String judul, String pengarang, String penerbit, String isbn) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put("judul", judul);
+        values.put("pengarang", pengarang);
+        values.put("penerbit", penerbit);
+        values.put("isbn", isbn);
+
+        int result = db.update("biodatabuku", values, "kode=?", new String[]{kode});
+        db.close();
+        return result > 0;
+    }
+
     public boolean checknim(String nim) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM biodata WHERE nim=?", new String[]{nim});
